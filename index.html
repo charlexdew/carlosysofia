@@ -93,9 +93,9 @@
         status.textContent = playing ? '♫ Playing our song · Tap the photo to pause' : 'Tap the photo to play our song ♫';
       };
       button.hidden = false;
-      status.hidden = false;
-      document.querySelector('.music-credit').hidden = false;
       button.addEventListener('click', async () => {
+        status.hidden = false;
+        document.querySelector('.music-credit').hidden = false;
         if (pending) return;
         stopFade();
         if (!audio.paused) { audio.pause(); return; }
