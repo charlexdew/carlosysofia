@@ -8,6 +8,13 @@
   <title>Carlos y Sofía</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/GreatVibes-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <script>
+    document.documentElement.classList.add('motion-pending');
+    // Never leave the page hidden if loading or animation setup fails.
+    window.arrivalFallback = setTimeout(() => {
+      document.documentElement.classList.remove('motion-pending');
+    }, 5000);
+  </script>
   <style>
     @font-face { font-family:'Great Vibes'; src:url('assets/fonts/GreatVibes-Regular.ttf') format('truetype'); font-style:normal; font-weight:400; font-display:swap; }
     :root { color-scheme:light; --paper:#f2e4e3; --ink:#603f49; --muted:#775c64; }
@@ -34,6 +41,19 @@
       .composition { gap:24px; }
       h1 { font-size:64px; }
     }
+    @media (prefers-reduced-motion:no-preference) {
+      .motion-pending .portrait-wrap, .motion-pending .copy { opacity:0; }
+      .motion-ready .portrait-wrap { animation:portrait-arrival 2.2s cubic-bezier(.2,.65,.3,1) both; }
+      .motion-ready .copy { animation:copy-arrival 1.4s ease .65s both; }
+    }
+    @keyframes portrait-arrival {
+      from { opacity:0; transform:translateY(12px) rotate(-2deg); }
+      to { opacity:1; transform:translateY(0) rotate(-2deg); }
+    }
+    @keyframes copy-arrival {
+      from { opacity:0; transform:translateY(7px); }
+      to { opacity:1; transform:translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -49,5 +69,25 @@
       </section>
     </div>
   </main>
+  <script>
+    (async () => {
+      const portrait = document.querySelector('.portrait');
+      try {
+        await Promise.race([
+          Promise.all([portrait.decode(), document.fonts.ready]),
+          new Promise(resolve => setTimeout(resolve, 4500))
+        ]);
+        // If the safety timeout already revealed the page, do not hide it again.
+        if (document.documentElement.classList.contains('motion-pending')) {
+          document.documentElement.classList.add('motion-ready');
+        }
+      } catch (_) {
+        // Keep all content visible if the image cannot be decoded.
+      } finally {
+        clearTimeout(window.arrivalFallback);
+        document.documentElement.classList.remove('motion-pending');
+      }
+    })();
+  </script>
 </body>
 </html>
