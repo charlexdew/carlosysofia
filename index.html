@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eee0ca">
+  <meta name="description" content="Carlos y Sofía — our little corner of the internet.">
+  <title>Carlos y Sofía</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/GreatVibes-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <style>
+    @font-face { font-family:'Great Vibes'; src:url('assets/fonts/GreatVibes-Regular.ttf') format('truetype'); font-style:normal; font-weight:400; font-display:swap; }
+    :root { color-scheme:light; --paper:#eee0ca; --ink:#583f2e; --muted:#705c47; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); min-height:100svh; display:flex; flex-direction:column; }
+    main { flex:1; width:100%; max-width:1320px; margin:auto; padding:48px clamp(24px,6vw,88px); display:grid; grid-template-columns:1.15fr 1fr; gap:clamp(32px,5vw,72px); align-items:center; }
+    .copy { text-align:center; }
+    h1 { font-family:'Great Vibes',cursive; font-weight:400; font-size:clamp(66px,7.2vw,106px); line-height:1.35; margin:0; }
+    h1 span { white-space:nowrap; }
+    .quote { margin:0; padding:0 24px 32px; text-align:center; font:italic clamp(18px,1.8vw,22px)/1.7 Georgia,'Times New Roman',serif; color:var(--muted); text-wrap:balance; }
+    .portrait { display:block; width:100%; max-width:460px; height:auto; justify-self:end; border-radius:160px 160px 3px 3px; background:#d8cab4; }
+    @media (max-width:760px) {
+      main { grid-template-columns:1fr; gap:32px; padding:40px 24px; align-content:center; }
+      h1 { font-size:clamp(58px,12vw,82px); }
+      .quote { font-size:18px; }
+      .portrait { max-width:390px; justify-self:center; border-radius:130px 130px 3px 3px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="copy" aria-labelledby="names">
+      <h1 id="names"><span>Carlos</span> y <span>Sofía</span></h1>
+    </section>
+    <img class="portrait" src="assets/carlos-and-sofia.webp" width="1200" height="1600" alt="An illustrated portrait of Carlos and Sofía smiling beneath warm string lights." fetchpriority="high">
+  </main>
+  <footer class="quote">Our little corner of the internet.</footer>
+</body>
+</html>
