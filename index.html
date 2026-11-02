@@ -49,6 +49,11 @@
       .motion-pending .portrait-wrap, .motion-pending .copy { opacity:0; }
       .motion-ready .portrait-wrap { animation:portrait-arrival 2.2s cubic-bezier(.2,.65,.3,1) both; }
       .motion-ready .copy { animation:copy-arrival 1.4s ease .65s both; }
+      .music-hint:not([hidden]) { animation:music-reveal 1.6s ease both; }
+    }
+    @keyframes music-reveal {
+      from { opacity:0; }
+      to { opacity:1; }
     }
     @keyframes portrait-arrival {
       from { opacity:0; transform:translateY(12px) rotate(-2deg); }
@@ -72,7 +77,7 @@
         <h1 id="names"><span>Carlos</span> <span class="join">y</span> <span>Sofía</span></h1>
         <div class="rule" aria-hidden="true"></div>
         <p class="quote">Our little corner of the internet.</p>
-        <p class="music-hint" id="music-status" role="status" hidden><span id="music-action">Playing </span><a href="https://archive.org/details/sam-swaap-hmv-c-4842-1-beethoven/03+Sam+Swaap+-+HMV+B+4723+1+Martini+1927.flac" target="_blank" rel="noopener noreferrer">Plaisir d'amour 1927</a><span id="music-instruction"> Tap the photo to pause.</span></p>
+        <p class="music-hint" id="music-status" role="status" hidden><span aria-hidden="true">♫ </span><span id="music-action">Playing </span><a href="https://archive.org/details/sam-swaap-hmv-c-4842-1-beethoven/03+Sam+Swaap+-+HMV+B+4723+1+Martini+1927.flac" target="_blank" rel="noopener noreferrer">Plaisir d'amour 1927</a></p>
       </section>
     </div>
   </main>
@@ -83,19 +88,17 @@
       const audio = document.querySelector('#our-song');
       const status = document.querySelector('#music-status');
       const action = document.querySelector('#music-action');
-      const instruction = document.querySelector('#music-instruction');
       let fade;
       let startupTimer;
       let attempt = 0;
       const stopFade = () => clearInterval(fade);
-      const message = (prefix, suffix) => {
+      const message = prefix => {
         action.textContent = prefix;
-        instruction.textContent = suffix;
       };
       const update = playing => {
         button.setAttribute('aria-pressed', String(playing));
         button.setAttribute('aria-label', playing ? 'Pause Plaisir d’amour' : 'Play Plaisir d’amour');
-        message(playing ? 'Playing ' : 'Paused ', playing ? ' Tap the photo to pause.' : ' Tap the photo to resume.');
+        message(playing ? 'Playing ' : 'Paused ');
       };
       button.hidden = false;
       button.addEventListener('click', async () => {
@@ -106,7 +109,7 @@
         button.removeAttribute('aria-busy');
         if (!audio.paused) { audio.pause(); return; }
         button.setAttribute('aria-busy', 'true');
-        message('Loading ', ' Tap the photo to cancel.');
+        message('Loading ');
         if (audio.error) audio.load();
         // Start audibly: suspended animation frames must never leave audio muted.
         audio.volume = 0.15;
@@ -115,7 +118,7 @@
           ++attempt;
           audio.pause();
           button.removeAttribute('aria-busy');
-          message('Unable to start ', ' Tap the photo to try again.');
+          message('Unable to start ');
         }, 15000);
         try {
           // Call play directly from the tap so mobile browsers permit sound.
@@ -131,7 +134,7 @@
         } catch (_) {
           if (currentAttempt !== attempt) return;
           update(false);
-          message('Unable to start ', ' Tap the photo to try again.');
+          message('Unable to start ');
         } finally {
           if (currentAttempt === attempt) {
             clearTimeout(startupTimer);
@@ -141,10 +144,10 @@
       });
       audio.addEventListener('playing', () => update(true));
       audio.addEventListener('pause', () => { stopFade(); update(false); });
-      audio.addEventListener('ended', () => { stopFade(); update(false); message('Finished ', ' Tap the photo to play again.'); });
+      audio.addEventListener('ended', () => { stopFade(); update(false); message('Finished '); });
       audio.addEventListener('error', () => {
         stopFade(); update(false);
-        message('Unable to load ', ' Tap the photo to try again.');
+        message('Unable to load ');
       });
     })();
   </script>
