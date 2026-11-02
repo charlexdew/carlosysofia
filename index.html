@@ -24,11 +24,10 @@
     .composition { width:100%; max-width:720px; display:flex; flex-direction:column; align-items:center; gap:30px; text-align:center; }
     .portrait-wrap { margin:0; width:min(344px,100%); padding:12px 12px 33px; background:#fff9f3; transform:rotate(-2deg); box-shadow:0 2px 5px #603f4914,0 12px 28px #603f4926; }
     .portrait { display:block; width:100%; height:auto; aspect-ratio:3/4; }
-    .photo-button { display:block; width:100%; padding:0; border:0; background:transparent; cursor:pointer; }
+    .photo-button { display:block; width:100%; padding:0; border:0; background:transparent; cursor:pointer; touch-action:manipulation; }
     .photo-button:focus-visible { outline:3px solid var(--ink); outline-offset:6px; }
     .music-hint { font:italic 13px/1.5 Georgia,'Times New Roman',serif; color:var(--muted); margin:18px 0 0; }
-    .music-credit { font:11px/1.5 Georgia,'Times New Roman',serif; color:var(--muted); margin:5px 0 0; }
-    .music-credit a { color:inherit; text-underline-offset:3px; }
+    .music-hint a { color:inherit; text-underline-offset:3px; }
     .copy { width:100%; }
     h1 { font:400 clamp(64px,8vw,92px)/1.3 'Great Vibes',cursive; margin:0; text-wrap:balance; }
     h1 span { white-space:nowrap; }
@@ -73,61 +72,79 @@
         <h1 id="names"><span>Carlos</span> <span class="join">y</span> <span>Sofía</span></h1>
         <div class="rule" aria-hidden="true"></div>
         <p class="quote">Our little corner of the internet.</p>
-        <p class="music-hint" id="music-status" role="status" hidden>Tap the photo to play our song ♫</p>
-        <p class="music-credit" hidden>Plaisir d’amour · Sam Swaap · 1927 · <a href="https://archive.org/details/sam-swaap-hmv-c-4842-1-beethoven/03+Sam+Swaap+-+HMV+B+4723+1+Martini+1927.flac" target="_blank" rel="noopener noreferrer">Source</a></p>
+        <p class="music-hint" id="music-status" role="status" hidden><span id="music-action">Playing </span><a href="https://archive.org/details/sam-swaap-hmv-c-4842-1-beethoven/03+Sam+Swaap+-+HMV+B+4723+1+Martini+1927.flac" target="_blank" rel="noopener noreferrer">Plaisir d'amour 1927</a><span id="music-instruction"> Tap the photo to pause.</span></p>
       </section>
     </div>
   </main>
-  <audio id="our-song" preload="none" src="assets/plaisir-damour-sam-swaap-1927.mp3"></audio>
+  <audio id="our-song" preload="metadata" src="assets/plaisir-damour-sam-swaap-1927.mp3"></audio>
   <script>
     (() => {
       const button = document.querySelector('.photo-button');
       const audio = document.querySelector('#our-song');
       const status = document.querySelector('#music-status');
+      const action = document.querySelector('#music-action');
+      const instruction = document.querySelector('#music-instruction');
       let fade;
-      let pending = false;
-      const stopFade = () => cancelAnimationFrame(fade);
+      let startupTimer;
+      let attempt = 0;
+      const stopFade = () => clearInterval(fade);
+      const message = (prefix, suffix) => {
+        action.textContent = prefix;
+        instruction.textContent = suffix;
+      };
       const update = playing => {
         button.setAttribute('aria-pressed', String(playing));
         button.setAttribute('aria-label', playing ? 'Pause Plaisir d’amour' : 'Play Plaisir d’amour');
-        status.textContent = playing ? '♫ Playing our song · Tap the photo to pause' : 'Tap the photo to play our song ♫';
+        message(playing ? 'Playing ' : 'Paused ', playing ? ' Tap the photo to pause.' : ' Tap the photo to resume.');
       };
       button.hidden = false;
       button.addEventListener('click', async () => {
         status.hidden = false;
-        document.querySelector('.music-credit').hidden = false;
-        if (pending) return;
+        const currentAttempt = ++attempt;
         stopFade();
+        clearTimeout(startupTimer);
+        button.removeAttribute('aria-busy');
         if (!audio.paused) { audio.pause(); return; }
-        pending = true;
         button.setAttribute('aria-busy', 'true');
-        status.textContent = 'Loading our song…';
-        audio.volume = 0;
+        message('Loading ', ' Tap the photo to cancel.');
+        if (audio.error) audio.load();
+        // Start audibly: suspended animation frames must never leave audio muted.
+        audio.volume = 0.15;
+        startupTimer = setTimeout(() => {
+          if (currentAttempt !== attempt) return;
+          ++attempt;
+          audio.pause();
+          button.removeAttribute('aria-busy');
+          message('Unable to start ', ' Tap the photo to try again.');
+        }, 15000);
         try {
           // Call play directly from the tap so mobile browsers permit sound.
           await audio.play();
+          if (currentAttempt !== attempt) return;
           const start = performance.now();
-          const ramp = now => {
-            if (audio.paused) return;
-            const progress = Math.min((now - start) / 1800, 1);
-            audio.volume = progress * 0.55;
-            if (progress < 1) fade = requestAnimationFrame(ramp);
-          };
-          fade = requestAnimationFrame(ramp);
+          fade = setInterval(() => {
+            if (audio.paused) { stopFade(); return; }
+            const progress = Math.min((performance.now() - start) / 1800, 1);
+            audio.volume = 0.15 + progress * 0.4;
+            if (progress === 1) stopFade();
+          }, 50);
         } catch (_) {
+          if (currentAttempt !== attempt) return;
           update(false);
-          status.textContent = 'Music could not start · Tap the photo to try again';
+          message('Unable to start ', ' Tap the photo to try again.');
         } finally {
-          pending = false;
-          button.removeAttribute('aria-busy');
+          if (currentAttempt === attempt) {
+            clearTimeout(startupTimer);
+            button.removeAttribute('aria-busy');
+          }
         }
       });
       audio.addEventListener('playing', () => update(true));
       audio.addEventListener('pause', () => { stopFade(); update(false); });
-      audio.addEventListener('ended', () => { stopFade(); update(false); });
+      audio.addEventListener('ended', () => { stopFade(); update(false); message('Finished ', ' Tap the photo to play again.'); });
       audio.addEventListener('error', () => {
         stopFade(); update(false);
-        status.textContent = 'Music unavailable · Tap the photo to try again';
+        message('Unable to load ', ' Tap the photo to try again.');
       });
     })();
   </script>
