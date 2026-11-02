@@ -26,7 +26,8 @@
     .portrait { display:block; width:100%; height:auto; aspect-ratio:3/4; }
     .photo-button { display:block; width:100%; padding:0; border:0; background:transparent; cursor:pointer; touch-action:manipulation; }
     .photo-button:focus-visible { outline:3px solid var(--ink); outline-offset:6px; }
-    .music-hint { font:italic 13px/1.5 Georgia,'Times New Roman',serif; color:var(--muted); margin:18px 0 0; }
+    .music-hint { position:fixed; right:max(18px,env(safe-area-inset-right)); bottom:max(16px,env(safe-area-inset-bottom)); max-width:calc(100vw - 36px); text-align:right; font:italic 13px/1.5 Georgia,'Times New Roman',serif; color:var(--muted); margin:0; }
+    main { padding-bottom:76px; }
     .music-hint a { color:inherit; text-underline-offset:3px; }
     .copy { width:100%; }
     h1 { font:400 clamp(64px,8vw,92px)/1.3 'Great Vibes',cursive; margin:0; text-wrap:balance; }
@@ -77,10 +78,10 @@
         <h1 id="names"><span>Carlos</span> <span class="join">y</span> <span>Sofía</span></h1>
         <div class="rule" aria-hidden="true"></div>
         <p class="quote">Our little corner of the internet.</p>
-        <p class="music-hint" id="music-status" role="status" hidden><span aria-hidden="true">♫ </span><span id="music-action">Playing </span><a href="https://archive.org/details/sam-swaap-hmv-c-4842-1-beethoven/03+Sam+Swaap+-+HMV+B+4723+1+Martini+1927.flac" target="_blank" rel="noopener noreferrer">Plaisir d'amour 1927</a></p>
       </section>
     </div>
   </main>
+  <p class="music-hint" id="music-status" role="status" hidden><span aria-hidden="true">♫ </span><span id="music-action">Playing </span><a href="https://archive.org/details/sam-swaap-hmv-c-4842-1-beethoven/03+Sam+Swaap+-+HMV+B+4723+1+Martini+1927.flac" target="_blank" rel="noopener noreferrer">Plaisir d'amour 1927</a></p>
   <audio id="our-song" preload="metadata" src="assets/plaisir-damour-sam-swaap-1927.mp3"></audio>
   <script>
     (() => {
